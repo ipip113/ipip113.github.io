@@ -1,0 +1,997 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>강호유람기 (江湖遊覽記)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Nanum+Brush+Script&family=Yeon+Sung&display=swap"
+      rel="stylesheet"
+    />
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              brush: ['"Yeon Sung"', '"Nanum Brush Script"', "cursive"],
+              batang: ['"Gowun Batang"', "serif"],
+            },
+          },
+        },
+      };
+    </script>
+
+    <style>
+      body {
+        font-family: "Gowun Batang", serif;
+        background-color: #0a0a0a;
+        color: #d4d4d8;
+        overflow-x: hidden;
+        background-image: url("https://www.transparenttextures.com/patterns/rice-paper.png");
+        background-attachment: fixed;
+      }
+      .brush-font {
+        font-family: "Yeon Sung", "Nanum Brush Script", cursive;
+      }
+
+      /* 낙엽 애니메이션 */
+      .leaf {
+        position: fixed;
+        top: -50px;
+        pointer-events: none;
+        z-index: 50;
+        animation: fall linear infinite;
+        user-select: none;
+      }
+      @keyframes fall {
+        0% {
+          transform: translateY(-10px) translateX(-20px) rotate(0deg);
+          opacity: 0;
+        }
+        10% {
+          opacity: 1;
+        }
+        50% {
+          transform: translateY(50vh) translateX(20px) rotate(180deg);
+        }
+        90% {
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(100vh) translateX(-20px) rotate(360deg);
+          opacity: 0;
+        }
+      }
+
+      /* 애니메이션 */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* 스크롤바 */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #18181b;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #7f1d1d;
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #991b1b;
+      }
+    </style>
+  </head>
+  <body class="antialiased">
+    <!-- 브금 (사용자 클릭 시 재생) -->
+    <audio
+      id="bgm"
+      loop
+      src="https://dn720003.ca.archive.org/0/items/guzheng-oriental-traditional-music/Guzheng%20-%20Oriental%20Traditional%20Music.mp3"
+    ></audio>
+
+    <!-- 시작 입장 화면 -->
+    <div
+      id="entryScreen"
+      class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-zinc-950 transition-opacity duration-1000"
+    >
+      <div
+        class="absolute inset-0 opacity-40 mix-blend-overlay"
+        style="
+          background-image: url(&quot;https://www.transparenttextures.com/patterns/rice-paper.png&quot;);
+        "
+      ></div>
+      <div
+        class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-red-900/20 via-zinc-950/80 to-zinc-950"
+      ></div>
+
+      <div class="relative z-10 flex flex-col items-center space-y-12">
+        <div class="text-center space-y-4 animate-[fadeIn_1.5s_ease-out]">
+          <h1
+            class="text-8xl md:text-[9rem] tracking-widest brush-font text-orange-200 drop-shadow-[0_0_15px_rgba(200,50,50,0.5)]"
+          >
+            武林
+          </h1>
+          <p
+            class="text-xl md:text-2xl tracking-[0.3em] font-light text-zinc-400"
+          >
+            천하의 주종을 묻다
+          </p>
+        </div>
+
+        <button
+          onclick="enterWorld()"
+          class="group relative px-10 py-4 overflow-hidden border border-orange-900/50 hover:border-orange-500/50 bg-zinc-900/50 backdrop-blur-md transition-all duration-700 w-64"
+        >
+          <span
+            class="relative z-10 text-2xl brush-font tracking-widest text-orange-300 group-hover:text-amber-200 transition-colors duration-500"
+            >입장하기</span
+          >
+          <div
+            class="absolute inset-0 w-1/4 h-full transform -skew-x-[20deg] bg-gradient-to-r from-transparent via-orange-900/30 to-transparent -translate-x-full group-hover:translate-x-[400%] transition-transform duration-1000"
+          ></div>
+        </button>
+      </div>
+    </div>
+
+    <!-- 메인 사이트 영역 -->
+    <div
+      id="mainContent"
+      class="opacity-0 transition-opacity duration-1000 pointer-events-none relative min-h-screen"
+    >
+      <div id="leaves"></div>
+
+      <header
+        class="py-12 flex flex-col items-center justify-center relative z-10 border-b border-zinc-800/80 bg-zinc-950/80 backdrop-blur-md"
+      >
+        <h1
+          class="text-5xl md:text-7xl font-bold brush-font text-transparent bg-clip-text bg-gradient-to-br from-amber-200 via-orange-300 to-red-600 mb-4 drop-shadow-md"
+        >
+          강호유람기 (江湖遊覽記)
+        </h1>
+        <p
+          class="tracking-widest text-zinc-500 font-light mt-2 text-sm md:text-base"
+        >
+          어둠 속에 잠든 군상들의 이야기
+        </p>
+      </header>
+
+      <main class="relative z-10 pb-24">
+        <div class="space-y-24 py-16 px-4">
+          <section class="text-center space-y-6 max-w-4xl mx-auto">
+            <h2 class="text-5xl brush-font text-orange-300">세계관 (世界觀)</h2>
+            <div
+              class="w-24 h-px bg-gradient-to-r from-transparent via-red-800 to-transparent mx-auto"
+            ></div>
+            <div
+              id="worldBg"
+              class="space-y-6 text-zinc-300 leading-relaxed text-lg break-keep"
+            ></div>
+          </section>
+
+          <section class="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+            <div class="border border-zinc-800 bg-zinc-900/50 p-8 relative">
+              <div class="absolute top-0 left-0 w-2 h-full bg-red-900/50"></div>
+              <h3 class="text-3xl brush-font text-amber-200 mb-6">환경 설정</h3>
+              <ul id="worldSettings" class="space-y-6"></ul>
+            </div>
+            <div class="border border-zinc-800 bg-zinc-900/50 p-8 relative">
+              <div
+                class="absolute top-0 right-0 w-2 h-full bg-orange-900/50"
+              ></div>
+              <h3 class="text-3xl brush-font text-amber-200 mb-6">무의 경지</h3>
+              <div
+                id="worldLevels"
+                class="flex flex-wrap gap-2 text-sm mb-6"
+              ></div>
+            </div>
+          </section>
+
+          <section class="max-w-6xl mx-auto space-y-12">
+            <div class="text-center space-y-4 mb-16">
+              <h2 class="text-5xl brush-font text-orange-300">세력 (勢力)</h2>
+              <div
+                class="w-24 h-px bg-gradient-to-r from-transparent via-red-800 to-transparent mx-auto"
+              ></div>
+            </div>
+            <div id="factionList" class="space-y-12"></div>
+          </section>
+        </div>
+
+        <div
+          class="w-full h-px bg-gradient-to-r from-transparent via-red-900/30 to-transparent my-16 max-w-4xl mx-auto"
+        ></div>
+
+        <div class="max-w-7xl mx-auto px-4">
+          <div class="text-center space-y-4 mb-16">
+            <h2 class="text-5xl brush-font text-orange-300">인물 (人物)</h2>
+            <div
+              class="w-24 h-px bg-gradient-to-r from-transparent via-red-800 to-transparent mx-auto"
+            ></div>
+            <p class="text-zinc-500 pt-4">천계를 뒤흔들 영웅과 마두들</p>
+          </div>
+
+          <div
+            id="filterButtons"
+            class="flex flex-wrap justify-center gap-4 mb-16"
+          ></div>
+          <div
+            id="characterGrid"
+            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
+          ></div>
+        </div>
+      </main>
+    </div>
+
+    <div
+      id="charModal"
+      class="fixed inset-0 z-[150] hidden items-center justify-center p-4"
+    >
+      <div
+        class="absolute inset-0 bg-zinc-950/90 backdrop-blur-sm cursor-pointer"
+        onclick="closeModal()"
+      ></div>
+      <div
+        id="modalContent"
+        class="relative z-10 max-w-4xl w-full bg-zinc-900 border border-zinc-700 shadow-2xl flex flex-col md:flex-row overflow-hidden max-h-[90vh]"
+      ></div>
+    </div>
+
+    <!-- 스크립트: 데이터베이스 및 로직 -->
+    <script>
+      const UNIVERSE_INFO = {
+        background: [
+          "명나라 중기 즈음. 황명(皇命)이 천하를 호령한다 하나, 강호의 무림인들에게 그 법은 닿지 않았다.",
+          "칼이 곧 법이요, 주먹이 곧 진리인 무인들만의 독자적 사회가 중원의 이면에 깊이 뿌리내리고 있었다.",
+          "구파일방의 낡은 위선과 마교의 핏빛 패도, 그리고 오대세가의 오만함이 맞부딪히며 무림은 매일같이 피구름이 걷히지 않았다.",
+          "특히 피바람의 중심이 된 현 강호는 과거 어느 때보다도 치열하고 잔혹한 난세. 수많은 문파가 뜨고 지는 가운데, 어둠 속에 잠든 군상들이 천하의 주종을 묻고자 움직이기 시작한다.",
+        ],
+        currency: "금자 1냥 = 은자 10냥 = 동전 1000문. (객잔 하룻밤 약 50문)",
+        luoyang:
+          "중원의 심장. 온갖 문파와 상단이 몰려드는 곳. '태백루(객잔)' 존재.",
+        wulinAlliance:
+          "하남성 정주. 정파 연합 본부. 현재 권력 다툼으로 썩어감.",
+        levels: ["삼류", "이류", "일류", "절정", "초절정", "화경", "현경"],
+        subLevels: ["초입", "완숙", "극의"],
+      };
+
+      const FACTIONS = [
+        {
+          name: "구파 (九派)",
+          description: "무림맹의 주축을 이루는 천하 정종의 아홉 문파.",
+          members: [
+            {
+              name: "소림사",
+              desc: "[하남성 숭산] 불교. 무림의 태두(泰斗). 72종의 무예(칠십이절기)를 지니며 '역근경'이 비전. 장법과 곤술에 능함.",
+            },
+            {
+              name: "무당파",
+              desc: "[호북성 무당산] 도교. 태극의 이치로 부드러움으로 강함을 제압. 태극혜검과 태극권이 주력.",
+            },
+            {
+              name: "화산파",
+              desc: "[섬서성 화산] 도교. 쾌와 환을 중시. 화려하게 피어나는 '매화검법'과 이십사수매화검이 유명.",
+            },
+            {
+              name: "종남파",
+              desc: "[섬서성 종남산] 도교. 화산파와 인접해 있어 예로부터 검술로 라이벌 관계를 형성.",
+            },
+            {
+              name: "아미파",
+              desc: "[사천성 아미산] 불교. 비구니(여승)와 속가 여제자 위주의 문파. 매서운 무공 구사.",
+            },
+            {
+              name: "곤륜파",
+              desc: "[청해성 곤륜산] 도교. 중원 외곽에 위치해 신비주의 성향이 강함. '운룡대팔식' 등 경공 뛰어남.",
+            },
+            {
+              name: "점창파",
+              desc: "[운남성 점창산] 도교. 험준한 산세에 기원하여 변환무쌍하고 찌르기에 특화된 '사일검법'.",
+            },
+            {
+              name: "해남파",
+              desc: "[광동성 해남 섬] 도교. 중원 최남단 검파. 거친 바다의 폭풍을 형상화한 '남해삼십육검'.",
+            },
+            {
+              name: "청성파",
+              desc: "[사천성 청성산] 도교. 청음검법과 무영신검을 다루며 사천당가와 알력 다툼 심함.",
+            },
+          ],
+        },
+        {
+          name: "일방 (一幇)",
+          description: "천하의 거지들이 모인 거대한 정보 및 무력 집단.",
+          members: [
+            {
+              name: "개방",
+              desc: "[중원 전역] 타구봉법과 항룡십팔장이 비전. 제일가는 정보망을 갖춤.",
+            },
+          ],
+        },
+        {
+          name: "오대세가 (五大世家)",
+          description: "가문의 핏줄로 무공을 이어가는 강력한 5대 혈족.",
+          members: [
+            {
+              name: "남궁세가",
+              desc: "[안휘성 합비] 오대세가의 수장 격. 천하제일검가로 불리며, 웅장하고 패도적인 '제왕검형(帝王劍形)'과 창천검기를 다룸.",
+            },
+            {
+              name: "사천당가",
+              desc: "[사천성 성도] 독과 암기의 명가. 철저한 폐쇄주의. '당가의 은원은 백 년을 간다'는 철칙을 가짐. 만독불침의 경지를 추구.",
+            },
+            {
+              name: "하북팽가",
+              desc: "[하북성 보정] 도의 명가. 무겁고 파괴적인 '오호단문도'를 구사하며, 기골이 장대하고 호탕한 인물들이 많음.",
+            },
+            {
+              name: "제갈세가",
+              desc: "[호북성 융중] 지략(두뇌)의 명가. 기관진법, 기문둔갑에 능통하며 무림맹의 책사 및 중재자 역할을 도맡음.",
+            },
+            {
+              name: "모용세가",
+              desc: "[강남 소주] 연자오에 위치. 강남의 막대한 부를 바탕으로 천하의 무공을 수집.",
+            },
+          ],
+        },
+        {
+          name: "세외무림 (世外武林)",
+          description: "중원의 상식을 벗어난 척박한 환경에서 발전한 변방 세력.",
+          members: [
+            {
+              name: "북해빙궁",
+              desc: "[북해/요동 이북] 극한의 추위 속 지배자들. 빙백신공 구사.",
+            },
+            {
+              name: "남만야수궁",
+              desc: "[운남 남부 밀림] 맹수와 독충이 우글거리는 밀림. 야수적 외공과 주술.",
+            },
+          ],
+        },
+        {
+          name: "사파: 흑도 (邪派)",
+          description: "이익과 힘을 최우선으로 삼는 음지의 무인들.",
+          members: [
+            {
+              name: "녹림",
+              desc: "산적과 도적들의 연합체. 전국 명산에 일흔두 개의 수채(녹림칠십이채)가 있음.",
+            },
+            { name: "장강수로채", desc: "물길을 장악한 수적 집단." },
+            {
+              name: "하오문",
+              desc: "음지의 인간들이 모인 집단. 개방과 쌍벽을 이루는 정보 단체.",
+            },
+            { name: "살막", desc: "돈을 받고 목숨을 거두는 전문 암살자 집단." },
+          ],
+        },
+        {
+          name: "마교: 천마신교 (魔敎)",
+          description: "십만대산에 은둔하며 중원 정복을 꿈꾸는 절대악의 종교.",
+          members: [
+            {
+              name: "천마신교",
+              desc: "[신장 위구르 십만대산] 힘이 곧 법인 적자생존의 사회. 교주인 '천마'를 신으로 받듦.",
+            },
+          ],
+        },
+        {
+          name: "황실 (皇室)",
+          description:
+            "천하의 진짜 주인이지만 무림의 일에는 표면적으로 불간섭.",
+          members: [
+            {
+              name: "동창/서창",
+              desc: "환관들로 이루어진 황실 직속 첩보/암살 기관.",
+            },
+            {
+              name: "금의위",
+              desc: "황제 직속 친위대. 무림의 고수들을 제압하기 위한 진법과 무공을 갖춤.",
+            },
+          ],
+        },
+      ];
+
+      const CHARACTERS = [
+        // 구파일방
+        {
+          id: "연소휘",
+          name: "연소휘",
+          group: "구파일방",
+          faction: "소림사",
+          appearance: "흑발+금안",
+          role: "속가1대제자",
+          gender: "女",
+          level: "절정•완",
+          personality: "겉으론엄숙함, 실제론다혈질, 세속의유혹에약함",
+          speech:
+            '평소엔 "아미타불"을 읊는 정중한 합쇼체, 분노하면 거친 본성이 튀어나옴',
+          trait: "",
+        },
+        {
+          id: "진소운",
+          name: "진소운",
+          group: "구파일방",
+          faction: "무당파",
+          appearance: "흑발+흑안",
+          role: "1대제자",
+          gender: "女",
+          level: "절정•완",
+          personality: "까칠함, 신경질적, 약한 츤데레",
+          speech: "가시돋친 말투",
+          trait: "태극혜검의 후계자.",
+        },
+        {
+          id: "백청연",
+          name: "백청연",
+          group: "구파일방",
+          faction: "화산파",
+          appearance: "흑발+핑크색눈",
+          role: "대사저(1대제자)",
+          gender: "女",
+          level: "절정•완",
+          personality: "원칙주의, 금욕적, 외유내강",
+          speech: "흐트러짐 없는 단정하고 기품있는 평어",
+          trait: "화산파 백 년 이래 최고의 기재.",
+        },
+        {
+          id: "설아린",
+          name: "설아린",
+          group: "구파일방",
+          faction: "종남파",
+          appearance: "흑발+흰색눈",
+          role: "1대제자",
+          gender: "女",
+          level: "절정•완",
+          personality: "냉정함, 자부심, 지기싫어함",
+          speech: "간결하고 날카로운 평어",
+          trait: "화산파의 백청연과 라이벌 관계.",
+        },
+        {
+          id: "주연화",
+          name: "주연화",
+          group: "구파일방",
+          faction: "아미파",
+          appearance: "흑발+자안",
+          role: "3대제자",
+          gender: "女",
+          level: "일류•극",
+          personality: "여우, 교활한, 순수한척",
+          speech: "낭랑하고 명량한 말투, 계산적",
+          trait: "아미파의 신동이라 불리는 천재.",
+        },
+        {
+          id: "계설아",
+          name: "계설아",
+          group: "구파일방",
+          faction: "곤륜파",
+          appearance: "은발+청안",
+          role: "2대제자",
+          gender: "女",
+          level: "절정•초",
+          personality: "신비로움, 과묵함, 고고함",
+          speech: "안개처럼 몽환적이고 낮은 목소리",
+          trait: "운룡대팔식의 일인자.",
+        },
+        {
+          id: "은비주",
+          name: "은비주",
+          group: "구파일방",
+          faction: "점창파",
+          appearance: "흑발+호박색눈",
+          role: "1대제자",
+          gender: "女",
+          level: "절정•초",
+          personality: "호전적, 쾌활함, 메스가키",
+          speech: "놀리는듯한 공격적인 말투",
+          trait: "-",
+        },
+        {
+          id: "해비설",
+          name: "해비설",
+          group: "구파일방",
+          faction: "해남파",
+          appearance: "흑발+청안",
+          role: "2대제자",
+          gender: "女",
+          level: "일류•완",
+          personality: "자유분방, 순수한, 명량한",
+          speech: "파도처럼 시원시원한 말투",
+          trait: "남해삼십육검의 계승자.",
+        },
+        {
+          id: "하미주",
+          name: "하미주",
+          group: "구파일방",
+          faction: "청성파",
+          appearance: "흑발+녹안",
+          role: "2대제자",
+          gender: "女",
+          level: "일류•완",
+          personality: "영리함, 장난기, 교활함",
+          speech: "상대를 살살 약올리는 듯한 말투",
+          trait: "무영신검을 사용. 사천당가와 견원지간.",
+        },
+        {
+          id: "홍소월",
+          name: "홍소월",
+          group: "구파일방",
+          faction: "개방",
+          appearance: "갈색머리+갈색눈",
+          role: "2대제자",
+          gender: "女",
+          level: "절정•초",
+          personality: "나태함, 능구렁이, 시니컬함",
+          speech: "하품섞인 늘어지는 말투, 가끔 정곡을 찌르는 날카로운 어투",
+          trait: "게으름뱅이로 보이나 사실 개방 제일의 정보통이자 숨겨진 천재.",
+        },
+
+        // 오대세가
+        {
+          id: "남궁연",
+          name: "남궁연",
+          group: "오대세가",
+          faction: "남궁세가",
+          appearance: "흑발+청안",
+          role: "소가주",
+          gender: "女",
+          level: "절정•극",
+          personality: "오만함, 패도적, 자신감",
+          speech: "당당하고 위압적인 평어",
+          trait:
+            "제왕검형의 후계자. 실패를 모르는 온실 속의 여패왕으로 가문의 명예를 맹신함.",
+        },
+        {
+          id: "당소소",
+          name: "당소소",
+          group: "오대세가",
+          faction: "사천당가",
+          appearance: "갈색머리+녹안",
+          role: "가주의막내딸",
+          gender: "女",
+          level: "일류•극",
+          personality: "잔인함, 요염함, 집착, 유혹적",
+          speech: "나긋나긋하며 속을 살살 긁는말",
+          trait:
+            "맹독을 다루며 아름다운 외모 뒤에 뱀 같은 독기를 품음. 암기보다 독술 파.",
+        },
+        {
+          id: "팽여란",
+          name: "팽여란",
+          group: "오대세가",
+          faction: "하북팽가",
+          appearance: "갈색머리+적안",
+          role: "가주의장녀",
+          gender: "女",
+          level: "절정•완",
+          personality: "호탕함, 의리, 단순함",
+          speech: "껄껄웃으며 천지를 울리는 큰목소리",
+          trait: "-",
+        },
+        {
+          id: "제갈희",
+          name: "제갈희",
+          group: "오대세가",
+          faction: "제갈세가",
+          appearance: "흑발+자안",
+          role: "무림맹군사의딸",
+          gender: "女",
+          level: "일류•초",
+          personality: "계산적, 냉혈함, 완벽주의",
+          speech: "차분하고 예의바르나 감정이 없는 존댓말",
+          trait: "-",
+        },
+        {
+          id: "모용비",
+          name: "모용비",
+          group: "오대세가",
+          faction: "모용세가",
+          appearance: "은발+흰색눈",
+          role: "소가주",
+          gender: "女",
+          level: "절정•완",
+          personality: "허영심, 완벽주의, 도도함",
+          speech: "고상하고 우아한 규수 말투",
+          trait: "-",
+        },
+
+        // 무림맹
+        {
+          id: "주혜령",
+          name: "주혜령",
+          group: "무림맹",
+          faction: "무림맹",
+          appearance: "흑발+청안",
+          role: "무림맹주",
+          gender: "女",
+          level: "화경•극",
+          personality: "오만함, 권모술수, 유희를 즐김",
+          speech: "기품 넘치지만 상대를 꿰뚫어 보는 듯한 고압적인 규수 말투",
+          trait: "-",
+        },
+
+        // 세외무림
+        {
+          id: "설연화",
+          name: "설연화",
+          group: "세외무림",
+          faction: "북해빙궁",
+          appearance: "백발+청안",
+          role: "소궁주",
+          gender: "女",
+          level: "절정•초",
+          personality: "극도의차가움, 폐쇄적, 은근한외로움",
+          speech: "감정이 실리지 않은 냉랭한 단답형",
+          trait: "빙백신공의 한기 때문에 타인과의 접촉을 꺼림.",
+        },
+        {
+          id: "표야란",
+          name: "표야란",
+          group: "세외무림",
+          faction: "남만야수궁",
+          appearance: "구릿빛피부+갈색머리+금안",
+          role: "소궁주",
+          gender: "女",
+          level: "절정•초",
+          personality: "야성적, 직설적, 포악함",
+          speech: "짐승처럼 으르렁거리는 반말",
+          trait: "-",
+        },
+
+        // 사파
+        {
+          id: "맹호란",
+          name: "맹호란",
+          group: "사파",
+          faction: "녹림",
+          appearance: "흑발+녹안",
+          role: "총채주",
+          gender: "女",
+          level: "초절정•완",
+          personality: "잔혹, 호쾌함, 불신",
+          speech: "거칠고 욕설이 섞인 사자후",
+          trait: "-",
+        },
+        {
+          id: "수령",
+          name: "수령",
+          group: "사파",
+          faction: "장강수로채",
+          appearance: "흑발+청안",
+          role: "부채주",
+          gender: "女",
+          level: "초절정•초",
+          personality: "능글맞음, 기회주의, 탐욕",
+          speech: "유혹적이고 여유로운 콧소리 하오체",
+          trait: "-",
+        },
+        {
+          id: "설미향",
+          name: "설미향",
+          group: "사파",
+          faction: "하오문",
+          appearance: "흑발+적안",
+          role: "문주",
+          gender: "女",
+          level: "초절정•초",
+          personality: "정체불명, 속을알수없음, 치밀함",
+          speech: "애교 넘치지만 가시가 돋친 말투",
+          trait: "무림의 모든 음지 소문을 통제",
+        },
+        {
+          id: "무영",
+          name: "무영",
+          group: "사파",
+          faction: "살막",
+          appearance: "흑발+금안",
+          role: "천살(최고살수)",
+          gender: "女",
+          level: "초절정•극",
+          personality: "무감정, 기계적, 허무주의",
+          speech: "필요한 말 만하는 극도의 단답형",
+          trait: "-",
+        },
+
+        // 마교
+        {
+          id: "천희령",
+          name: "천희령",
+          group: "마교",
+          faction: "천마신교",
+          appearance: "흑안+적안",
+          role: "교주(천마)",
+          gender: "女",
+          level: "현경•초",
+          personality: "압도적, 오만함, 패도",
+          speech: "세상을 발아래 둔듯한 여군주의 평어",
+          trait: "전쟁 이후 백 년 만에 강림한 절대적인 여제.",
+        },
+        {
+          id: "설유화",
+          name: "설유화",
+          group: "마교",
+          faction: "천마신교",
+          appearance: "은사로 짠 백포, 안대, 은발",
+          role: "좌호법",
+          gender: "女",
+          level: "초절정•극",
+          personality: "이성적, 결벽증, 비틀린 충성심",
+          speech: "나긋나긋하고 예의 바른 극존칭",
+          trait: "'신교의 머리'. 맹인처럼 보이나 기감으로 세상을 봄.",
+        },
+        {
+          id: "적하륜",
+          name: "적하륜",
+          group: "마교",
+          faction: "천마신교",
+          appearance: "흑발+금안",
+          role: "우호법",
+          gender: "女",
+          level: "화경•초",
+          personality: "쾌락주의, 교활함, 위선혐오",
+          speech: "관능적이고 나른한말투",
+          trait:
+            "'신교의 칼'. 적이 절망하며 신념을 꺾는 모습을 최고의 유희로 여김.",
+        },
+        {
+          id: "천소하",
+          name: "천소하",
+          group: "마교",
+          faction: "천마신교",
+          appearance: "흑발+자안",
+          role: "소천마(후계자)",
+          gender: "女",
+          level: "초절정•완",
+          personality: "변덕스러움, 애정결핍, 광기",
+          speech: "어린아이 같은 말투, 본색 드러내면 소름 돋는 무감정",
+          trait:
+            "내면에는 스승의 기대에 미치지 못할까 봐 두려워하는 강박이 숨겨져 있음.",
+        },
+        {
+          id: "목련비",
+          name: "목련비",
+          group: "마교",
+          faction: "천마신교",
+          appearance: "자색발+자안",
+          role: "대호법",
+          gender: "女",
+          level: "화경•완",
+          personality: "요염함, 가학적, 치밀함",
+          speech: "남성을 홀리는 듯한 나긋나긋하고 몽환적인 톤",
+          trait: "피를 매개로 하는 마공의 대가.",
+        },
+
+        // 황실
+        {
+          id: "위홍련",
+          name: "위홍련",
+          group: "황실",
+          faction: "황실",
+          appearance: "백발+적안",
+          role: "금의위 지휘사",
+          gender: "女",
+          level: "초절정",
+          personality: "철혈, 원칙주의, 은근한 융통성",
+          speech: "군더더기 없이 딱딱하고 위압적인 관료의 존댓말",
+          trait: "-",
+        },
+      ];
+
+      const getImageUrl = (char) => {
+        return `https://raw.githubusercontent.com/ipip113/img/refs/heads/main/c/${encodeURIComponent(char.name)}/1.webp`;
+      };
+
+      const GROUPS = [
+        "전체",
+        "구파일방",
+        "오대세가",
+        "무림맹",
+        "세외무림",
+        "사파",
+        "마교",
+        "황실",
+      ];
+      let activeGroup = "전체";
+
+      function enterWorld() {
+        const entryScreen = document.getElementById("entryScreen");
+        entryScreen.classList.add("opacity-0", "pointer-events-none");
+        setTimeout(() => entryScreen.classList.add("hidden"), 1000);
+
+        const main = document.getElementById("mainContent");
+        main.classList.remove("opacity-0", "pointer-events-none");
+        main.classList.add("opacity-100");
+
+        const bgm = document.getElementById("bgm");
+        bgm.volume = 0.3;
+        bgm.play().catch((e) => console.log("Audio autoplay prevented:", e));
+
+        renderContent();
+        initLeaves();
+      }
+
+      function renderContent() {
+        // 세계관 배경
+        document.getElementById("worldBg").innerHTML = UNIVERSE_INFO.background
+          .map((para) => `<p>${para}</p>`)
+          .join("");
+
+        // 환경 설정
+        document.getElementById("worldSettings").innerHTML = `
+                <li><span class="text-red-400 block mb-1">화폐</span> <span class="text-zinc-400 text-sm">${UNIVERSE_INFO.currency}</span></li>
+                <li><span class="text-red-400 block mb-1">낙양 (중원)</span> <span class="text-zinc-400 text-sm">${UNIVERSE_INFO.luoyang}</span></li>
+                <li><span class="text-red-400 block mb-1">무림맹 (정주)</span> <span class="text-zinc-400 text-sm">${UNIVERSE_INFO.wulinAlliance}</span></li>
+            `;
+
+        // 무의 경지
+        document.getElementById("worldLevels").innerHTML = UNIVERSE_INFO.levels
+          .map(
+            (lvl) =>
+              `<span class="px-3 py-1 bg-zinc-950 border border-zinc-800 text-zinc-400">${lvl}</span>`,
+          )
+          .join("");
+
+        // 세력
+        document.getElementById("factionList").innerHTML = FACTIONS.map(
+          (faction) => `
+                <div class="border border-zinc-800 bg-zinc-900/40 p-8 hover:bg-zinc-900/60 transition-colors">
+                    <h3 class="text-3xl brush-font text-red-400 mb-2">${faction.name}</h3>
+                    <p class="text-zinc-400 mb-6 font-light">${faction.description}</p>
+                    <div class="grid sm:grid-cols-2 gap-4">
+                        ${faction.members
+                          .map(
+                            (member) => `
+                            <div class="space-y-1">
+                                <h4 class="text-amber-200 font-medium">${member.name}</h4>
+                                <p class="text-zinc-500 text-sm leading-relaxed">${member.desc}</p>
+                            </div>
+                        `,
+                          )
+                          .join("")}
+                    </div>
+                </div>
+            `,
+        ).join("");
+
+        // 필터 버튼
+        renderFilterButtons();
+
+        // 인물 렌더링
+        renderCharacters();
+      }
+
+      function renderFilterButtons() {
+        document.getElementById("filterButtons").innerHTML = GROUPS.map(
+          (group) => `
+                <button 
+                    onclick="setGroup('${group}')"
+                    class="px-6 py-2 border brush-font text-xl transition-all duration-300 ${activeGroup === group ? "bg-red-900/40 border-red-500/50 text-amber-200" : "bg-zinc-900/50 border-zinc-800 text-zinc-500 hover:text-zinc-300 hover:border-zinc-600"}"
+                >
+                    ${group}
+                </button>
+            `,
+        ).join("");
+      }
+
+      window.setGroup = function (group) {
+        activeGroup = group;
+        renderFilterButtons();
+        renderCharacters();
+      };
+
+      function renderCharacters() {
+        const grid = document.getElementById("characterGrid");
+        const filtered =
+          activeGroup === "전체"
+            ? CHARACTERS
+            : CHARACTERS.filter((c) => c.group === activeGroup);
+
+        grid.innerHTML = filtered
+          .map(
+            (char) => `
+                <div onclick="openModal('${char.id}')" class="group relative cursor-pointer aspect-[3/4] overflow-hidden bg-zinc-900 border border-zinc-800 hover:border-red-900/60 transition-colors duration-500">
+                    <div class="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-transparent z-10"></div>
+                    <img 
+                        src="${getImageUrl(char)}" 
+                        alt="${char.name}"
+                        loading="lazy"
+                        class="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 bg-zinc-800"
+                        onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(char.name)}&background=27272a&color=fcd34d&size=400';"
+                    />
+                    <div class="absolute bottom-0 left-0 p-6 z-20 w-full">
+                        <div class="flex items-end justify-between mb-2">
+                            <h3 class="text-3xl brush-font text-orange-200">${char.name}</h3>
+                            <span class="text-xs text-red-500/80 mb-1 border border-red-900/50 px-2 py-0.5">${char.faction}</span>
+                        </div>
+                        <p class="text-sm text-zinc-400 font-medium truncate">${char.role} · ${char.level}</p>
+                    </div>
+                </div>
+            `,
+          )
+          .join("");
+      }
+
+      window.openModal = function (id) {
+        const char = CHARACTERS.find((c) => c.id === id);
+        if (!char) return;
+
+        document.getElementById("modalContent").innerHTML = `
+                <div class="w-full md:w-2/5 h-64 md:h-auto border-b md:border-b-0 md:border-r border-zinc-800 relative">
+                    <div class="absolute inset-0 bg-gradient-to-t from-zinc-900 via-transparent to-transparent z-10"></div>
+                    <img src="${getImageUrl(char)}" class="w-full h-full object-cover bg-zinc-800" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(char.name)}&background=27272a&color=fcd34d&size=400';">
+                </div>
+                <div class="w-full md:w-3/5 p-8 flex flex-col items-center justify-center relative bg-zinc-950 text-center overflow-y-auto">
+                    <button onclick="closeModal()" class="absolute top-4 right-4 text-zinc-500 hover:text-white transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                    </button>
+                    
+                    <h2 class="text-6xl brush-font text-amber-200 mb-2">${char.name}</h2>
+                    <p class="text-red-500 font-medium mb-8 border-b border-red-900/50 pb-4 inline-block px-12">${char.group} · ${char.faction}</p>
+                    
+                    <div class="space-y-6 w-full max-w-sm mx-auto text-sm text-zinc-300">
+                        <div class="grid grid-cols-[80px_1fr] gap-4 text-left">
+                            <span class="text-zinc-500">외형</span><span class="font-medium">${char.appearance}</span>
+                        </div>
+                        <div class="grid grid-cols-[80px_1fr] gap-4 text-left">
+                            <span class="text-zinc-500">역할</span><span class="font-medium text-orange-200">${char.role}</span>
+                        </div>
+                        <div class="grid grid-cols-[80px_1fr] gap-4 text-left">
+                            <span class="text-zinc-500">경지</span><span class="font-medium text-red-400">${char.level}</span>
+                        </div>
+                        <div class="grid grid-cols-[80px_1fr] gap-4 text-left border-t border-zinc-800/50 pt-4 mt-4">
+                            <span class="text-zinc-500">성격</span><span>${char.personality}</span>
+                        </div>
+                        <div class="grid grid-cols-[80px_1fr] gap-4 text-left border-t border-zinc-800/50 pt-4 mt-4">
+                            <span class="text-zinc-500">화법</span><span class="italic text-zinc-400">"${char.speech}"</span>
+                        </div>
+                        ${
+                          char.trait && char.trait !== "-"
+                            ? `
+                            <div class="grid grid-cols-[80px_1fr] gap-4 text-left border-t border-zinc-800/50 pt-4 mt-4">
+                                <span class="text-amber-500/70">특징</span><span class="text-amber-100">${char.trait}</span>
+                            </div>
+                        `
+                            : ""
+                        }
+                    </div>
+                </div>
+            `;
+        const modal = document.getElementById("charModal");
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+      };
+
+      window.closeModal = function () {
+        const modal = document.getElementById("charModal");
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+      };
+
+      function initLeaves() {
+        const container = document.getElementById("leaves");
+        const totalLeaves = 20;
+        for (let i = 0; i < totalLeaves; i++) {
+          const leaf = document.createElement("div");
+          leaf.className = "leaf drop-shadow-md";
+          leaf.innerHTML = "🍁";
+          leaf.style.fontSize = `${12 + Math.random() * 16}px`;
+          leaf.style.left = `${Math.random() * 100}vw`;
+          leaf.style.animationDuration = `${8 + Math.random() * 7}s`;
+          leaf.style.animationDelay = `${Math.random() * 5}s`;
+          leaf.style.opacity = (0.6 + Math.random() * 0.4).toString();
+          container.appendChild(leaf);
+        }
+      }
+    </script>
+  </body>
+</html>
