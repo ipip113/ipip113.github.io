@@ -1,0 +1,28 @@
+@import url('https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Nanum+Brush+Script&family=Yeon+Sung&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-brush: "Yeon Sung", "Nanum Brush Script", cursive;
+  --font-batang: "Gowun Batang", serif;
+  
+  --color-wuxia-bg: #0a0a0a;
+  --color-wuxia-gold: #c39b6b;
+  --color-wuxia-red: #8b1313;
+  --color-wuxia-paper: #e1d3bc;
+}
+
+body {
+  background-color: var(--color-wuxia-bg);
+  color: var(--color-wuxia-paper);
+  font-family: var(--font-batang);
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, .brush-font {
+  font-family: var(--font-brush);
+}
+
+.bg-texture {
+  background-image: url('https://www.transparenttextures.com/patterns/rice-paper.png');
+  background-attachment: fixed;
+}
